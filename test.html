@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/main.css">
+        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        <div id="errors"></div>
+        <canvas id="video"></canvas>
+        <div class="stats"></div>
+
+        <script src="js/vendor/parallel.js"></script>
+        <script src="js/vendor/jsfeat-min.js"></script>
+        <script src="js/vendor/profiler.js"></script>
+        <script>
+
+
+    var pixelValue = function(frame, x, y) {
+        var value = 0;
+        var pos = 8*y*4+x*4;
+        if( frame.data[pos]===255 && frame.data[pos+1]===255 && frame.data[pos+2]===255 ) {
+            value = 1;
+        }
+
+        return value;
+    };
+
+        var _ctxIntegralImage = new Int32Array(8*8);
+        var _intTemp = new Int32Array(8*8);
+        var calculateIntegralImage = function( frame ) {
+            for(var i=0; i<8; i++) {
+                for(var j=0; j<8; j++) {
+                    if(j==0) {
+                        _intTemp[8*j+i] = pixelValue(frame, i, j);
+                    } else {
+                        _intTemp[8*j+i] = _intTemp[8*(j-1)+i] + pixelValue(frame, i, j);
+                    }
+                }
+            }
+            _ctxIntegralImage[0] = 0;
+            for(var i=0; i<8; i++) {
+                for(var j=0; j<8; j++) {
+                    if(i==0) {
+                        _ctxIntegralImage[8*j+i] = _intTemp[8*j+i];
+                    } else {
+                        _ctxIntegralImage[8*j+i] = _ctxIntegralImage[8*j+(i-1)] + _intTemp[8*j+i];
+                    }
+                }
+            }
+        };
+
+        var canvas = document.getElementById('video');
+        var ctx = canvas.getContext('2d');
+        canvas.width = 8;
+        canvas.height = 8;
+        canvas.style.width = '8px';
+        canvas.style.height = '8px';
+
+        ctx.fillStyle = "rgba(0,0,0,255)";
+        ctx.fillRect( 0, 0, 8, 8 );
+
+        ctx.fillStyle = "rgba(255,255,255,255)";
+        //ctx.fillRect( 0, 0, 1, 1 );
+
+        ctx.fillStyle = "rgba(255,255,255,255)";
+        ctx.fillRect( 0, 4, 1, 1 );
+
+        ctx.fillStyle = "rgba(255,255,255,255)";
+        ctx.fillRect( 0, 7, 1, 1 );
+
+        calculateIntegralImage(ctx.getImageData(0,0,8,8));
+
+        a= _intTemp;
+        console.log(_intTemp);
+        b = _ctxIntegralImage;
+        console.log(_ctxIntegralImage);
+
+        </script>
+    </body>
+</html>
